@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/tick_3.wav-eb775ee4f00937ab3fa984bcd4808efe.sample"
+
+[deps]
+
+source_file="res://Audio/tick_3.wav"
+dest_files=[ "res://.import/tick_3.wav-eb775ee4f00937ab3fa984bcd4808efe.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=false
+compress/mode=0

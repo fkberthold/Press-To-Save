@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/relay_on.wav-9a01e572dc14b784cb0fc4e84ffc036c.sample"
+
+[deps]
+
+source_file="res://Audio/relay_on.wav"
+dest_files=[ "res://.import/relay_on.wav-9a01e572dc14b784cb0fc4e84ffc036c.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=false
+compress/mode=0

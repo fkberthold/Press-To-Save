@@ -1,0 +1,43 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://Sprites/buttonhover.png" type="Texture" id=1]
+[ext_resource path="res://Sprites/button.png" type="Texture" id=2]
+[ext_resource path="res://Fonts/UAV-OSD-Sans-Mono.ttf" type="DynamicFontData" id=3]
+[ext_resource path="res://Scenes/ShieldButton.gd" type="Script" id=4]
+
+[sub_resource type="DynamicFont" id=1]
+size = 36
+extra_spacing_top = 18
+font_data = ExtResource( 3 )
+
+[node name="ShieldButton" type="Node2D"]
+script = ExtResource( 4 )
+
+[node name="ShieldButton" type="TextureButton" parent="."]
+margin_left = -127.0
+margin_top = -125.0
+margin_right = 127.0
+margin_bottom = 133.0
+texture_normal = ExtResource( 2 )
+texture_pressed = ExtResource( 1 )
+texture_hover = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="."]
+margin_left = -94.0
+margin_top = -114.0
+margin_right = 96.0
+margin_bottom = 107.0
+custom_fonts/font = SubResource( 1 )
+custom_colors/font_color = Color( 0.831373, 0.831373, 0.831373, 1 )
+text = "Power
+Shield"
+align = 1
+valign = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+[connection signal="button_down" from="ShieldButton" to="." method="_on_ShieldButton_button_down"]
+[connection signal="button_up" from="ShieldButton" to="." method="_on_ShieldButton_button_up"]

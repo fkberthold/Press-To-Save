@@ -1,0 +1,133 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+_global_script_classes=[ {
+"base": "Resource",
+"class": "AuxPower",
+"language": "GDScript",
+"path": "res://Scenes/DefenceFsm/AuxPower.gd"
+}, {
+"base": "Resource",
+"class": "Charging",
+"language": "GDScript",
+"path": "res://Scenes/DefenceFsm/Charging.gd"
+}, {
+"base": "Resource",
+"class": "Connecting",
+"language": "GDScript",
+"path": "res://Scenes/DefenceFsm/Connecting.gd"
+}, {
+"base": "Reference",
+"class": "GotmDebug",
+"language": "GDScript",
+"path": "res://addons/gotm/GotmDebug.gd"
+}, {
+"base": "Reference",
+"class": "GotmFile",
+"language": "GDScript",
+"path": "res://addons/gotm/GotmFile.gd"
+}, {
+"base": "Reference",
+"class": "GotmLobby",
+"language": "GDScript",
+"path": "res://addons/gotm/GotmLobby.gd"
+}, {
+"base": "Reference",
+"class": "GotmLobbyFetch",
+"language": "GDScript",
+"path": "res://addons/gotm/GotmLobbyFetch.gd"
+}, {
+"base": "Reference",
+"class": "GotmUser",
+"language": "GDScript",
+"path": "res://addons/gotm/GotmUser.gd"
+}, {
+"base": "Resource",
+"class": "Powerless",
+"language": "GDScript",
+"path": "res://Scenes/DefenceFsm/Powerless.gd"
+}, {
+"base": "Resource",
+"class": "Shielded",
+"language": "GDScript",
+"path": "res://Scenes/DefenceFsm/Shielded.gd"
+}, {
+"base": "Resource",
+"class": "StateMachine",
+"language": "GDScript",
+"path": "res://addons/fsm/StateMachine.gd"
+}, {
+"base": "Resource",
+"class": "StateMachineFactory",
+"language": "GDScript",
+"path": "res://addons/fsm/StateMachineFactory.gd"
+}, {
+"base": "Reference",
+"class": "_GotmDebugImpl",
+"language": "GDScript",
+"path": "res://addons/gotm/_impl/_GotmDebugImpl.gd"
+}, {
+"base": "Reference",
+"class": "_GotmImpl",
+"language": "GDScript",
+"path": "res://addons/gotm/_impl/_GotmImpl.gd"
+}, {
+"base": "Reference",
+"class": "_GotmImplUtility",
+"language": "GDScript",
+"path": "res://addons/gotm/_impl/_GotmImplUtility.gd"
+} ]
+_global_script_class_icons={
+"AuxPower": "",
+"Charging": "",
+"Connecting": "",
+"GotmDebug": "",
+"GotmFile": "",
+"GotmLobby": "",
+"GotmLobbyFetch": "",
+"GotmUser": "",
+"Powerless": "",
+"Shielded": "",
+"StateMachine": "",
+"StateMachineFactory": "",
+"_GotmDebugImpl": "",
+"_GotmImpl": "",
+"_GotmImplUtility": ""
+}
+
+[application]
+
+config/name="Press To Save"
+run/main_scene="res://Scenes/MainPanel.tscn"
+config/icon="res://icon.png"
+
+[autoload]
+
+Gotm="*res://addons/gotm/Gotm.gd"
+Network="*res://Scenes/Network.gd"
+
+[display]
+
+window/stretch/mode="2d"
+window/stretch/aspect="keep"
+
+[editor_plugins]
+
+enabled=PoolStringArray( "gamejolt_api_v2" )
+
+[global]
+
+etc=false
+
+[rendering]
+
+quality/driver/driver_name="GLES2"
+vram_compression/import_etc=true
+environment/default_environment="res://default_env.tres"

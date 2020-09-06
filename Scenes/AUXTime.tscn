@@ -1,0 +1,90 @@
+[gd_scene load_steps=11 format=2]
+
+[ext_resource path="res://Fonts/Digital System.ttf" type="DynamicFontData" id=1]
+[ext_resource path="res://Scenes/AUXTime.gd" type="Script" id=2]
+[ext_resource path="res://Audio/aux_hum.wav" type="AudioStream" id=3]
+[ext_resource path="res://Audio/tick_3.wav" type="AudioStream" id=4]
+[ext_resource path="res://Audio/tick_1.wav" type="AudioStream" id=5]
+[ext_resource path="res://Audio/tick_2.wav" type="AudioStream" id=6]
+
+[sub_resource type="StyleBoxFlat" id=1]
+bg_color = Color( 0.145098, 0.145098, 0.145098, 1 )
+
+[sub_resource type="DynamicFont" id=2]
+size = 51
+font_data = ExtResource( 1 )
+
+[sub_resource type="Animation" id=3]
+resource_name = "HumOff"
+tracks/0/type = "value"
+tracks/0/path = NodePath("Hum:volume_db")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.5, 1 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ 1.0, -24.0, -80.0 ]
+}
+
+[sub_resource type="Animation" id=4]
+resource_name = "HumOn"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/path = NodePath("Hum:volume_db")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.5 ),
+"transitions": PoolRealArray( 1, 1 ),
+"update": 0,
+"values": [ -24.0, 1.0 ]
+}
+
+[node name="AUXTime" type="Label"]
+margin_right = 187.0
+margin_bottom = 49.0
+custom_styles/normal = SubResource( 1 )
+custom_fonts/font = SubResource( 2 )
+custom_colors/font_color = Color( 0.0627451, 0.443137, 0.0470588, 1 )
+text = "999:99:99.9"
+valign = 1
+script = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Timer" type="Timer" parent="."]
+
+[node name="HTTPRequest" type="HTTPRequest" parent="."]
+
+[node name="Hum" type="AudioStreamPlayer" parent="."]
+stream = ExtResource( 3 )
+volume_db = 1.0
+
+[node name="ticks" type="Node" parent="."]
+
+[node name="tick1" type="AudioStreamPlayer" parent="ticks"]
+stream = ExtResource( 5 )
+volume_db = -12.0
+
+[node name="tick2" type="AudioStreamPlayer" parent="ticks"]
+stream = ExtResource( 6 )
+volume_db = -12.0
+
+[node name="tick3" type="AudioStreamPlayer" parent="ticks"]
+stream = ExtResource( 4 )
+volume_db = -12.0
+
+[node name="SoundAnimator" type="AnimationPlayer" parent="."]
+anims/HumOff = SubResource( 3 )
+anims/HumOn = SubResource( 4 )
+
+[node name="OffTimer" type="Timer" parent="."]
+one_shot = true
+[connection signal="request_completed" from="HTTPRequest" to="." method="_on_HTTPRequest_request_completed"]
+[connection signal="timeout" from="OffTimer" to="." method="_on_OffTimer_timeout"]
