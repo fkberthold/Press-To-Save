@@ -7,7 +7,7 @@ var rng = RandomNumberGenerator.new()
 var last_chosen = 0
 var current_strings = ["Initiating Connection..."]
 
-var ticker_talk = ["Waiting1", "Waiting2"]
+var ticker_talk = []
 var started
 
 func select_random_string():
@@ -21,15 +21,20 @@ func select_random_string():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-    started = false
+    var f = File.new()
+    f.open("res://one_liners.tres", f.READ)
+    while not f.eof_reached():
+        ticker_talk.append(f.get_line())
+    started = true
     rng.randomize()
     last_chosen = -1
     text = " ".repeat(chars_to_display)
     $Timer.wait_time = 1.0/display_speed
     $Timer.start()
+    
 
 func add_message(message):
-    current_strings.append(message)
+    current_strings.append("   " + message)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
@@ -44,6 +49,6 @@ func _on_Timer_timeout():
     if len(current_strings[0]) == 0:
         current_strings.pop_front()
     if len(current_strings) == 0 and started:
-        current_strings.append(" " + select_random_string())
+        current_strings.append("   " + select_random_string())
     elif len(current_strings) == 0 and not started:
         current_strings.append(" Initiating Connection...")

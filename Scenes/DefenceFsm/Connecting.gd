@@ -23,8 +23,9 @@ func _process(_delta: float) -> void:
         state_machine.transition('charging')
     
 func _on_enter_state() -> void:
+    print("Enter Connecting: " + str(target.time))
     target.update_aux()
     target.update_shield()
     
 func _on_leave_state() -> void:
-    print("Exit Connecting")
+    print("Exit Connecting: " + str(target.time))

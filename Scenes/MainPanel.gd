@@ -12,9 +12,12 @@ var key_queue = []
 var started = false
 var peer
 
+var display_name = "Zdiles"
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
     $GameJoltAPI.init(private_key, game_id)
+    $DefenceSystem.set_initial_state()
 #    connect_to_lobby()
     
 func connect_to_lobby():
@@ -66,17 +69,20 @@ func create_new_lobby():
 #func _process(delta):
 #    pass
 func set_reward(reward_value):
+    print("Setting reward: %s" % reward_value)
     $YourReward/YourReward.add_reward(reward_value)
-    if Gotm.user.display_name in $Benefactors/Benefactors.rewards:
-        $Benefactors/Benefactors.rewards[Gotm.user.display_name] += reward_value
-    else:
-        $Benefactors/Benefactors.rewards[Gotm.user.display_name] = reward_value
-    $Benefactors/Benefactors.update_board()
-    $GameJoltAPI.set_data(Gotm.user.id + "_reward", $YourReward/YourReward.reward)
-    $GameJoltAPI.set_data(Gotm.user.id + "_name", Gotm.user.display_name)
+#    if Gotm.user.display_name in $Benefactors/Benefactors.rewards:
+#        $Benefactors/Benefactors.rewards[Gotm.user.display_name] += reward_value
+#    else:
+#        $Benefactors/Benefactors.rewards[Gotm.user.display_name] = reward_value
+#    $Benefactors/Benefactors.update_board()
+#    $GameJoltAPI.set_data(Gotm.user.id + "_reward", $YourReward/YourReward.reward)
+#    $GameJoltAPI.set_data(Gotm.user.id + "_name", Gotm.user.display_name)
 
 func _on_ShieldButton_button_down():
     if not $DefenceSystem.state_machine.current_state in ['charging', 'connecting']:
+        announce_press()
+        set_reward($OfferedReward/CurrentReward.get_prize_value())
         $DefenceSystem.state_machine.transition('charging')
 #    print("Button Down!")
 #    print("Charging: " + str($Meter.charging))
@@ -98,10 +104,18 @@ func _on_ShieldButton_button_down():
 #        $GameJoltAPI.set_data("Max_Reward", $OfferedReward/CurrentReward.current_max)
 #        send_update(true)
 
+func announce_press():
+    if $DefenceSystem.state_machine.current_state == "powerless":
+        $Ticker.add_message("Thank heavens, %s, you found the defence pod.  We need to keep the shield powered." % display_name)
+    else:
+        $Ticker.add_message("Thank you to %s who has just earned $%s defending us all." % [display_name, $OfferedReward/CurrentReward.get_prize_value()])
+
 func _on_GameJoltAPI_gamejolt_request_completed(type, message, finished):
     if(type == "/data-store/get-keys/"):
         for key in message["keys"]:
             key_queue.push_back(key["key"])
+        if not "game_state" in key_queue:
+            $DefenceSystem.set_initial_state()
         if key_queue:
             $GameJoltAPI.fetch_data(key_queue[0])
     elif(type == "/data-store/"):
@@ -121,34 +135,8 @@ func _on_GameJoltAPI_gamejolt_request_completed(type, message, finished):
             $Benefactors/Benefactors.ids[key_value.split("_")[0]] = null
         elif("_name" in key_value):
             user_names[key_value.split("_")[0]] = result
-        elif(key_value == "Stored_value"):
-            $OfferedReward/CurrentReward.stored_value = int(result)
-        elif(key_value == "AUXTime_end"):
-            $AUXPower/AUXTime.time_timeout = int(result)
-        elif(key_value == "Charge_timeout"):
-            if int(result) > OS.get_unix_time():
-                $Meter.timeout = int(result)
-                $Meter.time_remaining = $Meter.timeout - OS.get_unix_time()
-                $Meter.running = false
-                $Meter.charging = true
-            else:
-                $Meter.charging = false
-        elif(key_value == "Shield_timeout"):
-            if int(result) > OS.get_unix_time():
-                $Meter.timeout = int(result)
-                $Meter.time_remaining = $Meter.timeout - OS.get_unix_time()
-                $Meter.running = true
-                $OfferedReward/CurrentReward.running = true
-            else:
-                $Meter.timeout = int(result)
-                $Meter.running = false
-                $Meter.time_remaining = 0
-                $AuxPower/AUXTime.running = true
-                $OfferedReward/CurrentReward.running = false
-        elif(key_value == "Shield_max"):
-            $Meter.max_time = int(result)
-        elif(key_value == "Max_Reward"):
-            $OfferedReward/CurrentReward.current_max = int(result)
+        elif("game_state" in key_value):
+            $DefenceSystem.set_state_string(result)
             
         if(key_queue):
             $GameJoltAPI.fetch_data(key_queue[0])

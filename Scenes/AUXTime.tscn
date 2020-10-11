@@ -60,8 +60,6 @@ __meta__ = {
 
 [node name="Timer" type="Timer" parent="."]
 
-[node name="HTTPRequest" type="HTTPRequest" parent="."]
-
 [node name="Hum" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 3 )
 volume_db = 1.0
@@ -83,8 +81,3 @@ volume_db = -12.0
 [node name="SoundAnimator" type="AnimationPlayer" parent="."]
 anims/HumOff = SubResource( 3 )
 anims/HumOn = SubResource( 4 )
-
-[node name="OffTimer" type="Timer" parent="."]
-one_shot = true
-[connection signal="request_completed" from="HTTPRequest" to="." method="_on_HTTPRequest_request_completed"]
-[connection signal="timeout" from="OffTimer" to="." method="_on_OffTimer_timeout"]

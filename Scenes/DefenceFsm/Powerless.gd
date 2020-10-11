@@ -11,13 +11,12 @@ func _init().():
     leave_state_enabled = true
 
 func _process(_delta: float) -> void:
-    if target.aux_time == null:
+    if target.aux_timeout == null:
         state_machine.transition("connecting")
-    elif target.charging_timeout < target.time:
-        state_machine.transition("charging")
     
 func _on_enter_state() -> void:
-    print("Enter Powerless")
+    print("Enter Powerless: " + str(target.time))
     
 func _on_leave_state() -> void:
+    print("Exit Powerless" + str(target.time))
     target.change_max_reward()

@@ -19,11 +19,23 @@ func _process(_delta: float) -> void:
         target.update_shield()
 
 func _on_enter_state() -> void:
+    print("Enter Charging: " + str(target.time))
     target.max_shield += target.shieldIncrement
-    
-    target.charging_timeout = target.chargeTime
-    target.shield_timeout = target.max_shield
-    target.aux_timeout += target.auxIncrement
-    
+    target.charging_timeout = target.time + target.chargeTime
+    if target.shield_timeout > target.time:
+        target.max_shield += target.shieldIncrement
+        target.shield_timeout = target.charging_timeout + target.max_shield
+    else:
+        target.shield_timeout = target.charging_timeout + target.max_shield
+        
+    if target.aux_timeout > target.time:
+        target.aux_timeleft = target.aux_timeleft + target.auxIncrement
+    else:
+        target.aux_timeleft = target.auxIncrement
+    target.aux_timeout = target.shield_timeout + target.aux_timeleft
+
+    target.update_aux()
+    target.update_current_reward()
+            
 func _on_leave_state() -> void:
-    print("Exit Charging")
+    print("Exit Charging: " + str(target.time))

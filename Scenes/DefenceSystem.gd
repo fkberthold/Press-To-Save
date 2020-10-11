@@ -1,12 +1,13 @@
 extends Node
 
 signal reconnect
-signal update_aux(time_left)
-signal update_shield(charging, percent_left)
+signal update_aux(running, time_left)
+signal update_shield(charging, time_left, percent_left)
+signal update_reward(reward)
 
 export var shieldIncrement = 10
 export var auxIncrement = 30
-export var shieldInit = 30
+export var shieldInit = 10 # 30
 export var auxInit = 0
 export var chargeTime = 10
 export var initMaxReward = 2
@@ -26,6 +27,8 @@ var state_machine: StateMachine
 var charging_timeout = null
 var shield_timeout = null
 var aux_timeout = null
+var aux_timeleft = 0
+var charging_start = 0
 
 var max_shield = null
 
@@ -36,13 +39,13 @@ var max_reward = 0
 var time = null
 var time_offset = null
 onready var smf = StateMachineFactory.new()
-var counter = 0
+
+var reset_state = false
 
 func init_state(charge_to, shield_to, aux_to) -> void:
     charging_timeout = charge_to
     shield_timeout = shield_to
     aux_timeout = aux_to
-
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -70,15 +73,29 @@ func _ready() -> void:
 func get_state_string():
     return "%f,%f,%f,%f,%f,%f,%f" % [aux_timeout, charging_timeout, shield_timeout, max_shield, stored_reward, current_reward, max_reward]
 
+func set_initial_state():
+    if time:
+        aux_timeout = 0
+        charging_timeout = 0
+        shield_timeout = 0
+        max_shield = shieldInit
+        aux_timeleft = 0
+        stored_reward = 0
+        current_reward = 0
+        max_reward = initMaxReward
+        update_aux()
+    else:
+        reset_state = true
+        
+
 func set_state_string(state_string: String):
-    [max_shield, aux_timeout, charging_timeout, shield_timeout, max_shield, stored_reward, current_reward, max_reward] = state_string.split(",")
+    [aux_timeout, charging_timeout, shield_timeout, max_shield, stored_reward, current_reward, max_reward] = state_string.split(",")
 
 # This is required so that our FSM can handle updates
 func _input(event: InputEvent) -> void:
     state_machine._input(event)
 
 func _process(delta: float) -> void:
-    counter += delta
     if time == null:
         return
     time += delta
@@ -87,22 +104,18 @@ func _process(delta: float) -> void:
         request_unix_time()
         time = null
         state_machine.transition("connecting")
-        print("Drifted")
     state_machine._process(delta)
-    if counter > 1.0:
-        print("time: " + str(time))
-        counter = 0
 
 func change_max_reward():
-    if state_machine.current_state == "shielded" and (time < charging_timeout):
-        var percent = max(0, (charging_timeout - time) / max_shield)
+    if state_machine.current_state == "shielded" and (time < shield_timeout):
+        var percent = clamp((shield_timeout - time) / max_shield, 0, 1)
         if percent >= .5:
-            max_reward = max_reward + round(ease((percent - 0.5) * 2, -2.2) * rewardIncrement)
+            max_reward = max_reward + round(ease((percent + 0.5) * 2, -2.2) * rewardIncrement)
         else:
             max_reward = max(initMaxReward, round(ease(percent * 2, -2.2) * max_reward))
     else:
-        max_reward = initMaxReward 
-    emit_signal("max_reward", max_reward)     
+        max_reward = initMaxReward
+    print("max reward: %s" % max_reward)
 
 func request_unix_time():
     $HTTPRequest.request("http://worldtimeapi.org/api/timezone/Etc/UTC")
@@ -112,29 +125,33 @@ func _on_HTTPRequest_request_completed(_result, response_code, _headers, body):
         var json = JSON.parse(body.get_string_from_utf8())
         time = float(json.result['unixtime'])
         time_offset = time - OS.get_unix_time()
+        if reset_state:
+            set_initial_state()
     else:
         request_unix_time()
         emit_signal("reconnect")
 
 func update_aux():
     if state_machine.current_state == "connecting":
-        emit_signal("update_aux", null)
+        emit_signal("update_aux", false, null)
+    elif state_machine.current_state == "aux_power":
+        emit_signal("update_aux", true, aux_timeleft)
     else:
-        emit_signal("update_aux", max(0, aux_timeout - time))
+        emit_signal("update_aux", false, aux_timeleft)
 
 func update_shield():
     if state_machine.current_state == "connecting":
-        emit_signal("update_shield", null)
+        emit_signal("update_shield", null, null, null)
     elif state_machine.current_state == "charging":
-        emit_signal("update_shield", true, max(0, (charging_timeout - time) / max_shield))
+        emit_signal("update_shield", true, max(0, charging_timeout - time), max(0, charging_start + (1.0 - charging_start) * (chargeTime - (charging_timeout - time)) / chargeTime))
     elif state_machine.current_state == "shielded":
-        emit_signal("update_shield", false, max(0, (charging_timeout - time) / chargeTime))
+        emit_signal("update_shield", false, max(0, shield_timeout - time), max(0, (shield_timeout - time) / max_shield))
     else:
-        emit_signal("update_shield", true, 0)
+        emit_signal("update_shield", false, 0)
 
 func update_current_reward():
-    if state_machine.current_state == "shielded" and (time < charging_timeout):
-        var percent = max(0, (charging_timeout - time) / max_shield)
+    if state_machine.current_state == "shielded" and (time < shield_timeout):
+        var percent = clamp(1 - (shield_timeout - time) / max_shield, 0, 1)
         var logEase = stored_reward + round(ease(percent, 0.4) * max_reward)
         var tanEase = stored_reward + round(ease(percent, -0.4) * max_reward)
         emit_signal("update_reward", min(logEase, tanEase))

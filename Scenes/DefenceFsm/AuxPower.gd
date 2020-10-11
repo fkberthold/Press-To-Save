@@ -14,15 +14,22 @@ func _process(_delta: float) -> void:
     if target.aux_timeout == null:
         state_machine.transition("connecting")
     elif target.aux_timeout < target.time:
+        target.aux_timeleft = 0
         state_machine.transition("powerless")
     elif target.time < target.charging_timeout:
+        target.aux_timeleft = target.aux_timeout - target.time
         state_machine.transition("charging")
     else:
+        target.aux_timeleft = target.aux_timeout - target.time
         target.update_aux()
 
 func _on_enter_state() -> void:
+    print("enter Aux Power: " + str(target.time))
+    target.max_shield = target.shieldInit
+    target.max_reward = target.initMaxReward
     target.update_aux()
     
 func _on_leave_state() -> void:
+    print("Exit Aux Power: " + str(target.time))
+    target.aux_timeleft = max(0, target.aux_timeout - target.time)
     target.update_aux()
-    target.change_max_reward()

@@ -46,7 +46,7 @@ margin_bottom = 64.0
 valign = 1
 clip_text = true
 max_lines_visible = 1
-display_speed = 7
+display_speed = 6
 
 [node name="Benefactors" type="Node2D" parent="."]
 
@@ -175,10 +175,12 @@ Remain"
 value_below = 120
 
 [node name="Edges" type="TextureRect" parent="."]
-margin_right = 1024.0
+margin_left = -0.85733
+margin_right = 1023.14
 margin_bottom = 600.0
 texture = ExtResource( 5 )
 __meta__ = {
+"_edit_lock_": true,
 "_edit_use_anchors_": false
 }
 
@@ -187,9 +189,6 @@ position = Vector2( 867.584, 401.879 )
 rotation = 1.38141
 min_degrees = -83
 max_degrees = 83
-initial_max_time = 20
-charge_time = 10
-time_increment = 5
 
 [node name="ShieldButton" parent="." instance=ExtResource( 9 )]
 position = Vector2( 553.596, 303.995 )
@@ -202,12 +201,11 @@ wait_time = 0.5
 one_shot = true
 
 [node name="DefenceSystem" parent="." instance=ExtResource( 14 )]
-[connection signal="out_of_aux_time" from="AuxPower/AUXTime" to="." method="_on_AUXTime_out_of_aux_time"]
-[connection signal="indicator_time" from="Meter" to="30SecIndicator" method="_on_Meter_indicator_time"]
-[connection signal="indicator_time" from="Meter" to="2MinIndicator" method="_on_Meter_indicator_time"]
-[connection signal="out_of_time" from="Meter" to="AuxPower/AUXTime" method="_on_Meter_out_of_time"]
-[connection signal="out_of_time" from="Meter" to="OfferedReward/CurrentReward" method="_on_Meter_out_of_time"]
-[connection signal="percent_left" from="Meter" to="OfferedReward/CurrentReward" method="_on_Meter_percent_left"]
 [connection signal="button_down" from="ShieldButton" to="." method="_on_ShieldButton_button_down"]
 [connection signal="gamejolt_request_completed" from="GameJoltAPI" to="." method="_on_GameJoltAPI_gamejolt_request_completed"]
 [connection signal="timeout" from="RetryFetchTimer" to="." method="_on_RetryFetchTimer_timeout"]
+[connection signal="update_aux" from="DefenceSystem" to="AuxPower/AUXTime" method="_on_DefenceSystem_update_aux"]
+[connection signal="update_reward" from="DefenceSystem" to="OfferedReward/CurrentReward" method="_on_DefenceSystem_update_reward"]
+[connection signal="update_shield" from="DefenceSystem" to="Meter" method="_on_DefenceSystem_update_shield"]
+[connection signal="update_shield" from="DefenceSystem" to="30SecIndicator" method="_on_DefenceSystem_update_shield"]
+[connection signal="update_shield" from="DefenceSystem" to="2MinIndicator" method="_on_DefenceSystem_update_shield"]

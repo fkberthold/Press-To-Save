@@ -21,12 +21,6 @@ func _ready():
         $OnSound.volume_db = -100
         $OffSound.volume_db = -100
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-    last_time = last_time + delta
-    if last_time > 0.2:
-        turn_off()
-
 func turn_on():
     if !is_on:
         $LightBox.color = on_color
@@ -39,9 +33,8 @@ func turn_off():
         $OffSound.play()
         is_on = false
 
-
-func _on_Meter_indicator_time(time):
-    if time == value_below:
-        last_time = 0
+func _on_DefenceSystem_update_shield(charging, time_left, percent_left):
+    if time_left and not charging and time_left < value_below:
         turn_on()
-        
+    else:
+        turn_off()

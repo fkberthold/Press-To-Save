@@ -77,7 +77,6 @@ tracks/3/keys = {
 [node name="Meter" type="Node2D"]
 rotation = 1.55136
 script = ExtResource( 2 )
-initial_max_time = 30
 
 [node name="Sprite" type="Sprite" parent="."]
 position = Vector2( 0, -53.746 )
