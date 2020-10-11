@@ -1,11 +1,15 @@
-extends Label
+extends RichTextLabel
 
 export var display_speed = 5
 export var chars_to_display = 65
+export var standard_color = Color("#10710c")
+export var alert_color = Color("#10cf0c")
+export var news_color = Color("#10710c")
 
 var rng = RandomNumberGenerator.new()
 var last_chosen = 0
-var current_strings = ["Initiating Connection..."]
+var new_string = true
+var current_strings = [[standard_color, "Initiating Connection..."]]
 
 var ticker_talk = []
 var started
@@ -17,7 +21,7 @@ func select_random_string():
     else:
         last_chosen = next_number + 1
     
-    return ticker_talk[last_chosen]
+    return [standard_color, "   " + ticker_talk[last_chosen]]
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -33,22 +37,45 @@ func _ready():
     $Timer.start()
     
 
-func add_message(message):
-    current_strings.append("   " + message)
+func add_alert(message):
+    current_strings.append([alert_color, "   " + message])
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 #    pass
 
+func strip_bb(txt):
+    var re = RegEx.new()
+    re.compile("\\[.+?\\]")
+    return re.sub(txt, "", true)
+    
+func remove_first_char(txt):
+    var re = RegEx.new()
+    var tag = ""
+    re.compile("\\[.+?\\]")
+    if len(txt) == 0:
+        return txt
+    if txt[0] == "[":
+        tag = re.search(txt).get_string()
+        txt = re.sub(txt, "")
+    if len(txt) > 0:
+        txt = txt.substr(1)
+        if len(txt) > 0 and txt[0] != "[":
+            txt = tag + txt
+    return txt
 
 func _on_Timer_timeout():
-    text += current_strings[0][0]
-    current_strings[0] = current_strings[0].substr(1)
-    if len(text) > chars_to_display:
-        text = text.substr(1)
-    if len(current_strings[0]) == 0:
+    if new_string:
+        bbcode_text += "[color=#" + current_strings[0][0].to_html(false) + "]"
+        new_string = false
+    bbcode_text += current_strings[0][1][0]
+    current_strings[0][1] = current_strings[0][1].substr(1)
+    if len(strip_bb(bbcode_text)) > chars_to_display:
+        bbcode_text = remove_first_char(bbcode_text)
+    if len(current_strings[0][1]) == 0:
         current_strings.pop_front()
+        new_string = true
     if len(current_strings) == 0 and started:
-        current_strings.append("   " + select_random_string())
+        current_strings.append(select_random_string())
     elif len(current_strings) == 0 and not started:
-        current_strings.append(" Initiating Connection...")
+        current_strings.append([standard_color, " Initiating Connection..."])

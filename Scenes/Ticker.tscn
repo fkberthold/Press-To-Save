@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://Fonts/Digital System.ttf" type="DynamicFontData" id=1]
 [ext_resource path="res://Scenes/Ticker.gd" type="Script" id=2]
@@ -7,18 +7,29 @@
 bg_color = Color( 0.145098, 0.145098, 0.145098, 1 )
 
 [sub_resource type="DynamicFont" id=2]
+
+[sub_resource type="DynamicFont" id=3]
+
+[sub_resource type="DynamicFont" id=4]
+
+[sub_resource type="DynamicFont" id=5]
 size = 35
 font_data = ExtResource( 1 )
 
-[node name="Ticker" type="Label"]
+[node name="Ticker" type="RichTextLabel"]
 margin_left = 50.0
 margin_top = 34.0
 margin_right = 964.0
 margin_bottom = 74.0
 custom_styles/normal = SubResource( 1 )
-custom_fonts/font = SubResource( 2 )
-custom_colors/font_color = Color( 0.0627451, 0.443137, 0.0470588, 1 )
+custom_fonts/mono_font = SubResource( 2 )
+custom_fonts/bold_italics_font = SubResource( 3 )
+custom_fonts/italics_font = SubResource( 4 )
+custom_fonts/normal_font = SubResource( 5 )
+bbcode_enabled = true
+bbcode_text = "[color=#10710c]For the love of god, what are you doing?[color=#10cf0c]  Just push the button an"
 text = "For the love of god, what are you doing?  Just push the button an"
+scroll_active = false
 script = ExtResource( 2 )
 __meta__ = {
 "_edit_use_anchors_": false

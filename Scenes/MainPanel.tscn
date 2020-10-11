@@ -43,10 +43,8 @@ margin_left = 56.0
 margin_top = 24.0
 margin_right = 966.0
 margin_bottom = 64.0
-valign = 1
-clip_text = true
-max_lines_visible = 1
 display_speed = 6
+news_color = Color( 0, 0.0156863, 0.780392, 1 )
 
 [node name="Benefactors" type="Node2D" parent="."]
 
@@ -206,6 +204,6 @@ one_shot = true
 [connection signal="timeout" from="RetryFetchTimer" to="." method="_on_RetryFetchTimer_timeout"]
 [connection signal="update_aux" from="DefenceSystem" to="AuxPower/AUXTime" method="_on_DefenceSystem_update_aux"]
 [connection signal="update_reward" from="DefenceSystem" to="OfferedReward/CurrentReward" method="_on_DefenceSystem_update_reward"]
-[connection signal="update_shield" from="DefenceSystem" to="Meter" method="_on_DefenceSystem_update_shield"]
-[connection signal="update_shield" from="DefenceSystem" to="30SecIndicator" method="_on_DefenceSystem_update_shield"]
 [connection signal="update_shield" from="DefenceSystem" to="2MinIndicator" method="_on_DefenceSystem_update_shield"]
+[connection signal="update_shield" from="DefenceSystem" to="30SecIndicator" method="_on_DefenceSystem_update_shield"]
+[connection signal="update_shield" from="DefenceSystem" to="Meter" method="_on_DefenceSystem_update_shield"]

@@ -106,9 +106,9 @@ func _on_ShieldButton_button_down():
 
 func announce_press():
     if $DefenceSystem.state_machine.current_state == "powerless":
-        $Ticker.add_message("Thank heavens, %s, you found the defence pod.  We need to keep the shield powered." % display_name)
+        $Ticker.add_alert("Thank heavens, %s, you found the defence pod.  We need to keep the shield powered." % display_name)
     else:
-        $Ticker.add_message("Thank you to %s who has just earned $%s defending us all." % [display_name, $OfferedReward/CurrentReward.get_prize_value()])
+        $Ticker.add_alert("Thank you to %s who has just earned $%s defending us all." % [display_name, $OfferedReward/CurrentReward.get_prize_value()])
 
 func _on_GameJoltAPI_gamejolt_request_completed(type, message, finished):
     if(type == "/data-store/get-keys/"):
