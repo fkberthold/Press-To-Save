@@ -22,17 +22,18 @@ func _on_enter_state() -> void:
     print("Enter Charging: " + str(target.time))
     target.max_shield += target.shieldIncrement
     target.charging_timeout = target.time + target.chargeTime
+    
+    var aux_timeleft = max(0, min(target.aux_timeout - target.time, target.aux_timeout - target.shield_timeout))
+    
     if target.shield_timeout > target.time:
         target.max_shield += target.shieldIncrement
-        target.shield_timeout = target.charging_timeout + target.max_shield
-    else:
-        target.shield_timeout = target.charging_timeout + target.max_shield
-        
-    if target.aux_timeout > target.time:
-        target.aux_timeleft = target.aux_timeleft + target.auxIncrement
-    else:
-        target.aux_timeleft = target.auxIncrement
-    target.aux_timeout = target.shield_timeout + target.aux_timeleft
+    target.shield_timeout = target.charging_timeout + target.max_shield
+    
+    print("aux_timeout before: %s" % target.aux_timeout)
+    print("time: %s" % target.time)
+    
+    target.aux_timeout = target.shield_timeout + aux_timeleft + target.auxIncrement
+    print("aux_timeout after: %s" % target.aux_timeout)
 
     target.update_aux()
     target.update_current_reward()

@@ -1,7 +1,7 @@
 extends RichTextLabel
 
 export var display_speed = 5
-export var chars_to_display = 65
+export var chars_to_display = 69
 export var standard_color = Color("#10710c")
 export var alert_color = Color("#10cf0c")
 export var news_color = Color("#10710c")
@@ -12,7 +12,8 @@ var new_string = true
 var current_strings = [[standard_color, "Initiating Connection..."]]
 
 var ticker_talk = []
-var started
+var started # Have we connected to the network?
+var active # Is there power
 
 func select_random_string():
     var next_number = rng.randi_range(0, len(ticker_talk) - 2)
@@ -29,10 +30,10 @@ func _ready():
     f.open("res://one_liners.tres", f.READ)
     while not f.eof_reached():
         ticker_talk.append(f.get_line())
-    started = true
+    active = false
     rng.randomize()
     last_chosen = -1
-    text = " ".repeat(chars_to_display)
+    bbcode_text = " ".repeat(chars_to_display)
     $Timer.wait_time = 1.0/display_speed
     $Timer.start()
     
@@ -70,12 +71,23 @@ func _on_Timer_timeout():
         new_string = false
     bbcode_text += current_strings[0][1][0]
     current_strings[0][1] = current_strings[0][1].substr(1)
-    if len(strip_bb(bbcode_text)) > chars_to_display:
+#    if len(strip_bb(bbcode_text)) > chars_to_display:
+    if get_font("normal_font").get_string_size(bbcode_text).x > rect_size.x:
         bbcode_text = remove_first_char(bbcode_text)
     if len(current_strings[0][1]) == 0:
         current_strings.pop_front()
         new_string = true
-    if len(current_strings) == 0 and started:
+    if len(current_strings) == 0 and started and active:
         current_strings.append(select_random_string())
     elif len(current_strings) == 0 and not started:
         current_strings.append([standard_color, " Initiating Connection..."])
+    elif len(current_strings) == 0 and not active:
+        current_strings.append([standard_color, " Press the Red 'Power Shield' Button to activate the Lunar Defence System."])
+
+
+func _on_DefenceSystem_update_aux(running, time_left):
+    started = true
+
+
+func _on_DefenceSystem_update_shield(charging, time_left, percent_left):
+    pass # Replace with function body.

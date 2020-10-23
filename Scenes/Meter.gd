@@ -15,6 +15,9 @@ func _ready():
     rotation_degrees = min_degrees
 
 func _on_DefenceSystem_update_shield(charging, time_left, percent_left):
+    if not (min_degrees and degree_range and percent_left):
+        return
+        
     rotation_degrees = min_degrees + (degree_range * percent_left)
     
     if charging and not charging_started:

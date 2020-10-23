@@ -17,7 +17,9 @@ var display_name = "Zdiles"
 # Called when the node enters the scene tree for the first time.
 func _ready():
     $GameJoltAPI.init(private_key, game_id)
-    $DefenceSystem.set_initial_state()
+    key_queue = ["DefenceSystem"]
+    $GameJoltAPI.fetch_data("DefenceSystem")
+#    $DefenceSystem.set_initial_state()
 #    connect_to_lobby()
     
 func connect_to_lobby():
@@ -83,7 +85,9 @@ func _on_ShieldButton_button_down():
     if not $DefenceSystem.state_machine.current_state in ['charging', 'connecting']:
         announce_press()
         set_reward($OfferedReward/CurrentReward.get_prize_value())
+        $Ticker.active = true
         $DefenceSystem.state_machine.transition('charging')
+        $GameJoltAPI.set_data("DefenceSystem", $DefenceSystem.get_state_string())
 #    print("Button Down!")
 #    print("Charging: " + str($Meter.charging))
 #    print("started: " + str(started))
@@ -111,22 +115,33 @@ func announce_press():
         $Ticker.add_alert("Thank you to %s who has just earned $%s defending us all." % [display_name, $OfferedReward/CurrentReward.get_prize_value()])
 
 func _on_GameJoltAPI_gamejolt_request_completed(type, message, finished):
-    if(type == "/data-store/get-keys/"):
+    print([type, message, finished])
+    print(key_queue)
+    if(false and type == "/data-store/get-keys/"):
         for key in message["keys"]:
-            key_queue.push_back(key["key"])
-        if not "game_state" in key_queue:
-            $DefenceSystem.set_initial_state()
+            if key != "DefenceSystem":
+                key_queue.push_back(key["key"])
         if key_queue:
             $GameJoltAPI.fetch_data(key_queue[0])
     elif(type == "/data-store/"):
-        var json_parse = JSON.parse(message["data"])
         var key_value = key_queue.pop_front()
         var result
 
+        print(message)
+        if key_value == "DefenceSystem" and not message["success"]:
+            $DefenceSystem.set_initial_state()
+            return
+            
+        var json_parse = JSON.parse(message["data"])
+        
         if json_parse.result:
             result = json_parse.result
         else:
             result = message["data"]
+
+        if key_value == "DefenceSystem":
+            $DefenceSystem.set_state_string(result)
+        return
 
         if(Gotm.user.id and key_value == Gotm.user.id + "_reward"):
             $YourReward/YourReward.set_reward(int(result))
@@ -144,7 +159,7 @@ func _on_GameJoltAPI_gamejolt_request_completed(type, message, finished):
             for user_id in user_names:
                 $Benefactors/Benefactors.rewards[user_names[user_id]] = user_scores[user_id]
                 $Benefactors/Benefactors.update_board()
-
+    return
     if key_queue == [] and not started:
         $Ticker.started = true
         $Meter.started = true

@@ -27,7 +27,6 @@ var state_machine: StateMachine
 var charging_timeout = null
 var shield_timeout = null
 var aux_timeout = null
-var aux_timeleft = 0
 var charging_start = 0
 
 var max_shield = null
@@ -41,11 +40,7 @@ var time_offset = null
 onready var smf = StateMachineFactory.new()
 
 var reset_state = false
-
-func init_state(charge_to, shield_to, aux_to) -> void:
-    charging_timeout = charge_to
-    shield_timeout = shield_to
-    aux_timeout = aux_to
+var set_state = []
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -61,7 +56,7 @@ func _ready() -> void:
             {"id": "aux_power", "state": AuxPowerState}
         ],
         "transitions": [
-            {"state_id": "connecting", "to_states": ["charging","shielded","aux_power","powerless", "connecting"]},
+            {"state_id": "connecting", "to_states": []},
             {"state_id": "powerless", "to_states": ["charging","connecting"]},
             {"state_id": "charging", "to_states": ["shielded","connecting"]},
             {"state_id": "shielded", "to_states": ["charging", "aux_power","connecting"]},
@@ -71,7 +66,7 @@ func _ready() -> void:
 
 
 func get_state_string():
-    return "%f,%f,%f,%f,%f,%f,%f" % [aux_timeout, charging_timeout, shield_timeout, max_shield, stored_reward, current_reward, max_reward]
+    return "[%s,%s,%s,%s,%s,%s,%s]" % [aux_timeout, charging_timeout, shield_timeout, max_shield, stored_reward, current_reward, max_reward]
 
 func set_initial_state():
     if time:
@@ -79,7 +74,6 @@ func set_initial_state():
         charging_timeout = 0
         shield_timeout = 0
         max_shield = shieldInit
-        aux_timeleft = 0
         stored_reward = 0
         current_reward = 0
         max_reward = initMaxReward
@@ -88,8 +82,34 @@ func set_initial_state():
         reset_state = true
         
 
-func set_state_string(state_string: String):
-    [aux_timeout, charging_timeout, shield_timeout, max_shield, stored_reward, current_reward, max_reward] = state_string.split(",")
+func set_state_string(state_array):
+    if time:
+        aux_timeout = state_array[0]
+        charging_timeout = state_array[1]
+        shield_timeout = state_array[2]
+        max_shield = state_array[3]
+        stored_reward = state_array[4]
+        current_reward = state_array[5]
+        max_reward = state_array[6]
+        if charging_timeout > time:
+            state_machine.current_state = "charging"
+        elif shield_timeout > time:
+            state_machine.current_state = "shielded"
+        elif aux_timeout > time:
+            stored_reward = 0
+            current_reward = 0
+            state_machine.current_state = "aux_power"
+            max_shield = shieldInit
+        else:
+            stored_reward = 0
+            current_reward = 0
+            state_machine.current_state = "powerless"
+            max_shield = shieldInit
+        update_aux()
+        update_current_reward()
+        update_shield()
+    else:
+        set_state = state_array
 
 # This is required so that our FSM can handle updates
 func _input(event: InputEvent) -> void:
@@ -99,6 +119,8 @@ func _process(delta: float) -> void:
     if time == null:
         return
     time += delta
+#    print(state_machine.current_state + ": " + str(aux_timeout - time) + ":" + str(shield_timeout - time) + ":" + str(charging_timeout - time))
+#    print("aux_left: " + str(max(0, min(aux_timeout - time, aux_timeout - shield_timeout))))
     var drift = abs(time - (OS.get_unix_time() + time_offset))
     if drift > 2.0:
         request_unix_time()
@@ -118,7 +140,7 @@ func change_max_reward():
     print("max reward: %s" % max_reward)
 
 func request_unix_time():
-    $HTTPRequest.request("http://worldtimeapi.org/api/timezone/Etc/UTC")
+    $HTTPRequest.request("https://worldtimeapi.org/api/timezone/Etc/UTC")
 
 func _on_HTTPRequest_request_completed(_result, response_code, _headers, body):
     if response_code == 200:
@@ -127,13 +149,21 @@ func _on_HTTPRequest_request_completed(_result, response_code, _headers, body):
         time_offset = time - OS.get_unix_time()
         if reset_state:
             set_initial_state()
+        elif set_state:
+            set_state_string(set_state)
+            set_state = []
     else:
         request_unix_time()
         emit_signal("reconnect")
 
 func update_aux():
-    if state_machine.current_state == "connecting":
+    if not time:
         emit_signal("update_aux", false, null)
+        return
+        
+    var aux_timeleft = max(0, min(aux_timeout - time, aux_timeout - shield_timeout))
+    if state_machine.current_state == "connecting":
+        emit_signal("update_aux", false, aux_timeleft)
     elif state_machine.current_state == "aux_power":
         emit_signal("update_aux", true, aux_timeleft)
     else:
