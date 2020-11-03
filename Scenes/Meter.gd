@@ -17,9 +17,9 @@ func _ready():
 func _on_DefenceSystem_update_shield(charging, time_left, percent_left):
     if not (min_degrees and degree_range and percent_left):
         return
-        
+
     rotation_degrees = min_degrees + (degree_range * percent_left)
-    
+
     if charging and not charging_started:
         $ChargingSound.play()
         $RunningSound.stop()
@@ -30,6 +30,9 @@ func _on_DefenceSystem_update_shield(charging, time_left, percent_left):
         time_at_full = time_left
         $RunningSound.volume_db = -40
         $FailingSound.volume_db = -40
+    elif (not charging) and (not $RunningSound.play()) and (percent_left > 0):
+        $RunningSound.play()
+        $FailingSound.play()
     elif not charging and time_at_full - time_left <= 1.0:
         $RunningSound.volume_db = -40 + (ease(time_at_full - time_left, 0.4) * 40)
     elif not charging and percent_left <= 0.4 and time_left > 1.0:
@@ -38,7 +41,5 @@ func _on_DefenceSystem_update_shield(charging, time_left, percent_left):
     elif time_left <= 0.1:
         $RunningSound.stop()
         $FailingSound.stop()
-        
-        
     charging_started = charging
     

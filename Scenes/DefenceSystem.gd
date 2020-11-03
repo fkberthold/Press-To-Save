@@ -1,5 +1,6 @@
 extends Node
 
+signal powerless
 signal reconnect
 signal update_aux(running, time_left)
 signal update_shield(charging, time_left, percent_left)
@@ -11,7 +12,7 @@ export var shieldInit = 10 # 30
 export var auxInit = 0
 export var chargeTime = 10
 export var initMaxReward = 2
-export var rewardIncrement = 10.0
+export var rewardIncrement = 4.0
 
 const StateMachineFactory = preload("res://addons/fsm/StateMachineFactory.gd")
 const PowerlessState = preload("DefenceFsm/Powerless.gd")
@@ -77,10 +78,11 @@ func set_initial_state():
         stored_reward = 0
         current_reward = 0
         max_reward = initMaxReward
+        state_machine.current_state = "powerless"
+        powerless()
         update_aux()
     else:
         reset_state = true
-        
 
 func set_state_string(state_array):
     if time:
@@ -105,6 +107,7 @@ func set_state_string(state_array):
             current_reward = 0
             state_machine.current_state = "powerless"
             max_shield = shieldInit
+            powerless()
         update_aux()
         update_current_reward()
         update_shield()
@@ -187,3 +190,7 @@ func update_current_reward():
         emit_signal("update_reward", min(logEase, tanEase))
     else:
         emit_signal("update_reward", 0)
+
+func powerless():
+    print("POWERLESS!!!!!")
+    emit_signal("powerless")

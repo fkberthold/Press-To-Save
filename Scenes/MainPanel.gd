@@ -11,16 +11,20 @@ var user_names = {}
 var key_queue = []
 var started = false
 var peer
+var clearing = true
 
-var display_name = "Zdiles"
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
     $GameJoltAPI.init(private_key, game_id)
-    key_queue = ["DefenceSystem"]
-    $GameJoltAPI.fetch_data("DefenceSystem")
-#    $DefenceSystem.set_initial_state()
-#    connect_to_lobby()
+    if Gotm.is_live():
+        connect_to_lobby()
+    else:
+        Gotm.user.id = "X0"
+        Gotm.user.display_name = "Zdiles"
+        key_queue = ["DefenceSystem"]
+        $GameJoltAPI.fetch_data("DefenceSystem")
+        
     
 func connect_to_lobby():
     print("User_id: " + Gotm.user.id)
@@ -71,15 +75,10 @@ func create_new_lobby():
 #func _process(delta):
 #    pass
 func set_reward(reward_value):
-    print("Setting reward: %s" % reward_value)
     $YourReward/YourReward.add_reward(reward_value)
-#    if Gotm.user.display_name in $Benefactors/Benefactors.rewards:
-#        $Benefactors/Benefactors.rewards[Gotm.user.display_name] += reward_value
-#    else:
-#        $Benefactors/Benefactors.rewards[Gotm.user.display_name] = reward_value
-#    $Benefactors/Benefactors.update_board()
-#    $GameJoltAPI.set_data(Gotm.user.id + "_reward", $YourReward/YourReward.reward)
-#    $GameJoltAPI.set_data(Gotm.user.id + "_name", Gotm.user.display_name)
+    $GameJoltAPI.set_data(Gotm.user.id, '["%s",%s]' % [Gotm.user.display_name, $YourReward/YourReward.reward])
+    $Benefactors/Benefactors.rewards[Gotm.user.id] = [Gotm.user.display_name, $YourReward/YourReward.reward]
+    $Benefactors/Benefactors.update_board()
 
 func _on_ShieldButton_button_down():
     if not $DefenceSystem.state_machine.current_state in ['charging', 'connecting']:
@@ -110,24 +109,27 @@ func _on_ShieldButton_button_down():
 
 func announce_press():
     if $DefenceSystem.state_machine.current_state == "powerless":
-        $Ticker.add_alert("Thank heavens, %s, you found the defence pod.  We need to keep the shield powered." % display_name)
+        $Ticker.add_alert("Thank heavens, %s, you found the defence pod.  We need to keep the shield powered." % Gotm.user.display_name)
     else:
-        $Ticker.add_alert("Thank you to %s who has just earned $%s defending us all." % [display_name, $OfferedReward/CurrentReward.get_prize_value()])
+        $Ticker.add_alert("Thank you to %s who has just earned $%s defending us all." % [Gotm.user.display_name, $OfferedReward/CurrentReward.get_prize_value()])
 
 func _on_GameJoltAPI_gamejolt_request_completed(type, message, finished):
-    print([type, message, finished])
-    print(key_queue)
-    if(false and type == "/data-store/get-keys/"):
+    if(type == "/data-store/get-keys/"):
         for key in message["keys"]:
-            if key != "DefenceSystem":
+            if key["key"] != "DefenceSystem":
                 key_queue.push_back(key["key"])
+                $Benefactors/Benefactors.rewards[key["key"]] = ["", 0]
         if key_queue:
-            $GameJoltAPI.fetch_data(key_queue[0])
+            if $DefenceSystem.state_machine.current_state == "powerless":
+                for key in key_queue:
+                    $GameJoltAPI.set_data(Gotm.user.id, '["%s",%s]' % [Gotm.user.display_name, 0])
+                key_queue = []
+            else:
+                $GameJoltAPI.fetch_data(key_queue[0])
     elif(type == "/data-store/"):
         var key_value = key_queue.pop_front()
         var result
 
-        print(message)
         if key_value == "DefenceSystem" and not message["success"]:
             $DefenceSystem.set_initial_state()
             return
@@ -141,6 +143,15 @@ func _on_GameJoltAPI_gamejolt_request_completed(type, message, finished):
 
         if key_value == "DefenceSystem":
             $DefenceSystem.set_state_string(result)
+            $GameJoltAPI.get_data_keys()
+            return
+        elif key_value == Gotm.user.id and $DefenceSystem.state_machine.current_state != "powerless":
+            $YourReward/YourReward.set_reward(result[1])
+        if $DefenceSystem.state_machine.current_state != "powerless":
+            $Benefactors/Benefactors.rewards[key_value] = [result[0],result[1]]
+            $Benefactors/Benefactors.update_board()
+        else:
+            $Benefactors/Benefactors.rewards[key_value] = [result[0],0]
         return
 
         if(Gotm.user.id and key_value == Gotm.user.id + "_reward"):
@@ -279,3 +290,10 @@ remote func update_game_state(button_clicked, AUXTime_timeout, Charge_timeout, S
 func _on_RetryFetchTimer_timeout():
     if not started:
         start_fetch()
+
+func _on_DefenceSystem_powerless():
+    $YourReward/YourReward.set_reward(0)
+    for key in $Benefactors/Benefactors.rewards:
+        $GameJoltAPI.set_data(Gotm.user.id, '["%s",%s]' % [Gotm.user.display_name, 0])
+        $Benefactors/Benefactors.rewards[key] = ["", 0]
+    $Benefactors/Benefactors.update_board()

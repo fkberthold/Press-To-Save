@@ -7,7 +7,6 @@ extends ItemList
 #var heros = ["inkVVoVVweaver", "Kaprekar", "Jim", "Tony", "Josie", "LytheSD", "Cris", "Ellen", "Mom", "Dragon"]
 #var rewards = ["$10000", "$8842", "$5384", "$3284", "$2844", "$700", "$500", "$200", "$100", "$5"]
 var rewards = {}
-var ids = {}
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -32,7 +31,7 @@ class RewardSorter:
 func rewards_to_sorted_pairs():
     var reward_array = []
     for key in rewards:
-        reward_array.push_back([key, rewards[key]])
+        reward_array.push_back(rewards[key])
     reward_array.sort_custom(RewardSorter, "sort_reward")
     return reward_array
 # Called every frame. 'delta' is the elapsed time since the previous frame.

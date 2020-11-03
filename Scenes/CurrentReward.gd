@@ -1,8 +1,5 @@
 extends Label
 
-export var initial_max = 5
-#export var max_increment = 2
-var current_max = initial_max
 var prize_value = 0
 
 # Called when the node enters the scene tree for the first time.
