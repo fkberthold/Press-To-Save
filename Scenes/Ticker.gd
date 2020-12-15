@@ -85,9 +85,9 @@ func _on_Timer_timeout():
         current_strings.append([standard_color, " Press the Red 'Power Shield' Button to activate the Lunar Defence System."])
 
 
-func _on_DefenceSystem_update_aux(running, time_left):
+func _on_DefenceSystem_update_aux(_running, _time_left):
     started = true
 
 
-func _on_DefenceSystem_update_shield(charging, time_left, percent_left):
+func _on_DefenceSystem_update_shield(_charging, _time_left, _percent_left):
     pass # Replace with function body.

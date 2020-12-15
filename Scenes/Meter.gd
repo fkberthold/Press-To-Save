@@ -34,9 +34,9 @@ func _on_DefenceSystem_update_shield(charging, time_left, percent_left):
         $RunningSound.play()
         $FailingSound.play()
     elif not charging and time_at_full - time_left <= 1.0:
-        $RunningSound.volume_db = -40 + (ease(time_at_full - time_left, 0.4) * 40)
+        $RunningSound.volume_db = -40 + (ease(time_at_full - time_left, 0.4) * 60)
     elif not charging and percent_left <= 0.4 and time_left > 1.0:
-        $RunningSound.volume_db = -40 + (ease(percent_left * 2.5, -0.2) * 50)
+        $RunningSound.volume_db = -40 + (ease(percent_left * 2.5, -0.2) * 80)
         $FailingSound.volume_db = -40 + (ease(1 - percent_left * 2.5, 2) * 40)
     elif time_left <= 0.1:
         $RunningSound.stop()

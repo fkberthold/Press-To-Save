@@ -33,7 +33,7 @@ func turn_off():
         $OffSound.play()
         is_on = false
 
-func _on_DefenceSystem_update_shield(charging, time_left, percent_left):
+func _on_DefenceSystem_update_shield(charging, time_left, _percent_left):
     if time_left and not charging and time_left < value_below:
         turn_on()
     else:

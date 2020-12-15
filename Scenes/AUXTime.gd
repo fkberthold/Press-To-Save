@@ -4,7 +4,6 @@ export var increase_by = 30
 #var time_offset = 0
 var tsecs = 0
 var time_timeout = 0
-var running = false
 var started
 var at0 = false
 var ticked = false
@@ -22,8 +21,8 @@ func _ready():
     text = ""
 
             
-func play_tick(tick):
-    $ticks.get_children()[tick % ($ticks.get_child_count() - 1)].play()
+func play_tick(tick_index):
+    $ticks.get_children()[tick_index % ($ticks.get_child_count() - 1)].play()
 
 func update_display(running, time_left):
     if not time_left and time_left != 0:

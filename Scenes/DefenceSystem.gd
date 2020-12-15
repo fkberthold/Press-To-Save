@@ -6,13 +6,13 @@ signal update_aux(running, time_left)
 signal update_shield(charging, time_left, percent_left)
 signal update_reward(reward)
 
-export var shieldIncrement = 10
-export var auxIncrement = 30
-export var shieldInit = 10 # 30
+export var shieldIncrement = 2
+export var auxIncrement = 10
+export var shieldInit = 10
 export var auxInit = 0
 export var chargeTime = 10
 export var initMaxReward = 2
-export var rewardIncrement = 4.0
+export var rewardIncrement = 3.0
 
 const StateMachineFactory = preload("res://addons/fsm/StateMachineFactory.gd")
 const PowerlessState = preload("DefenceFsm/Powerless.gd")
@@ -21,9 +21,6 @@ const AuxPowerState = preload("DefenceFsm/AuxPower.gd")
 const ShieldedState = preload("DefenceFsm/Shielded.gd")
 const ConnectingState = preload("DefenceFsm/Connecting.gd")
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
 var state_machine: StateMachine
 var charging_timeout = null
 var shield_timeout = null
@@ -85,6 +82,8 @@ func set_initial_state():
         reset_state = true
 
 func set_state_string(state_array):
+    print("set_state_string")
+    print("State Array: " + str(state_array))
     if time:
         aux_timeout = state_array[0]
         charging_timeout = state_array[1]
@@ -94,15 +93,19 @@ func set_state_string(state_array):
         current_reward = state_array[5]
         max_reward = state_array[6]
         if charging_timeout > time:
+            print("Set: Charging")
             state_machine.current_state = "charging"
         elif shield_timeout > time:
+            print("Set: Shielded")
             state_machine.current_state = "shielded"
         elif aux_timeout > time:
+            print("Set: Aux_Power")
             stored_reward = 0
             current_reward = 0
             state_machine.current_state = "aux_power"
             max_shield = shieldInit
         else:
+            print("Set: Powerless")
             stored_reward = 0
             current_reward = 0
             state_machine.current_state = "powerless"
@@ -114,6 +117,15 @@ func set_state_string(state_array):
     else:
         set_state = state_array
 
+func update_state(state_array):
+    print("update_state")
+    print("State Array: " + str(state_array))
+    if state_machine.current_state == "connecting":
+        print("to set_state_string")
+        set_state_string(state_array)
+        return
+    state_machine.transition("charging")
+
 # This is required so that our FSM can handle updates
 func _input(event: InputEvent) -> void:
     state_machine._input(event)
@@ -122,13 +134,12 @@ func _process(delta: float) -> void:
     if time == null:
         return
     time += delta
-#    print(state_machine.current_state + ": " + str(aux_timeout - time) + ":" + str(shield_timeout - time) + ":" + str(charging_timeout - time))
-#    print("aux_left: " + str(max(0, min(aux_timeout - time, aux_timeout - shield_timeout))))
     var drift = abs(time - (OS.get_unix_time() + time_offset))
     if drift > 2.0:
         request_unix_time()
         time = null
-        state_machine.transition("connecting")
+        if(state_machine.current_state != "connecting"):
+            state_machine.transition("connecting")
     state_machine._process(delta)
 
 func change_max_reward():
@@ -151,19 +162,20 @@ func _on_HTTPRequest_request_completed(_result, response_code, _headers, body):
         time = float(json.result['unixtime'])
         time_offset = time - OS.get_unix_time()
         if reset_state:
+            print("Reset state")
             set_initial_state()
         elif set_state:
+            print("Set state")
             set_state_string(set_state)
             set_state = []
     else:
         request_unix_time()
-        emit_signal("reconnect")
+#        emit_signal("reconnect")
 
 func update_aux():
     if not time:
         emit_signal("update_aux", false, null)
         return
-        
     var aux_timeleft = max(0, min(aux_timeout - time, aux_timeout - shield_timeout))
     if state_machine.current_state == "connecting":
         emit_signal("update_aux", false, aux_timeleft)
@@ -180,7 +192,7 @@ func update_shield():
     elif state_machine.current_state == "shielded":
         emit_signal("update_shield", false, max(0, shield_timeout - time), max(0, (shield_timeout - time) / max_shield))
     else:
-        emit_signal("update_shield", false, 0)
+        emit_signal("update_shield", false, 0, 0)
 
 func update_current_reward():
     if state_machine.current_state == "shielded" and (time < shield_timeout):
@@ -194,3 +206,6 @@ func update_current_reward():
 func powerless():
     print("POWERLESS!!!!!")
     emit_signal("powerless")
+
+func try_connect():
+    emit_signal("reconnect")

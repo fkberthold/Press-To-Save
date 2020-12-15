@@ -8,7 +8,7 @@ func _ready():
 
 func comma_sep(n: int) -> String:
     var result := ""
-    var i: int = abs(n)
+    var i: int = int(abs(n))
 
     while i > 999:
         result = ",%03d%s" % [i % 1000, result]

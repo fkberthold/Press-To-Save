@@ -1,17 +1,11 @@
 extends ItemList
 
-
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
-#var heros = ["inkVVoVVweaver", "Kaprekar", "Jim", "Tony", "Josie", "LytheSD", "Cris", "Ellen", "Mom", "Dragon"]
-#var rewards = ["$10000", "$8842", "$5384", "$3284", "$2844", "$700", "$500", "$200", "$100", "$5"]
 var rewards = {}
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
     update_board()
-        
+
 func update_board():
     clear()
     var hero_reward_pairs = rewards_to_sorted_pairs()
