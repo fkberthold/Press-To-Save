@@ -55,7 +55,7 @@ margin_right = 344.902
 margin_bottom = 107.0
 rect_pivot_offset = Vector2( 152, 0 )
 custom_fonts/font = SubResource( 1 )
-text = "Luna's Heros (1443)"
+text = "Luna's Heros (1632)"
 align = 1
 __meta__ = {
 "_edit_use_anchors_": false

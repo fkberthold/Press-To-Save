@@ -36,35 +36,36 @@ func lobby_connect():
     print("lobby_connect")
     var fetch = GotmLobbyFetch.new()
     var lobbies = yield(fetch.first(5), "completed")
-    var lobbies_good = []
     print("  Checking Lobbies(%s):" % str(len(lobbies)))
     for lobby in lobbies:
-        print("    - lobby id:" + str(lobby.id))
-        print("    lobby peers: " + str(lobby.peers))
-        print("    lobby host id: " + str(lobby.host.id))
-        print("    lobby host name: " + str(lobby.host.display_name))
-        if not(lobby.id in bad_lobbies):
-            lobbies_good.append(lobby)
-    print("  Creating/choosing lobby.")
-    if lobbies_good:
-        var lobby = lobbies_good[0]
-        print("    lobby id:" + str(lobby.id))
-        print("    lobby peers: " + str(lobby.peers))
-        print("    lobby host id: " + str(lobby.host.id))
-        print("    lobby host name: " + str(lobby.host.display_name))
+        print("    - lobby id: " + str(lobby.id))
+        print("      lobby name: " + str(lobby.name))
+        if lobby.id in bad_lobbies:
+            print("      In Bad lobbies: " + str(lobby.id))
+            continue
+        print("  Creating/choosing lobby.")
         var success = yield(lobby.join(), "completed")
+        print("    Lobby Join Result: %s" % success)
+        if not success:
+            bad_lobbies.append(lobby.id)
+            continue
         peer = NetworkedMultiplayerENet.new()
+        print("    New peer: %s" % peer)
+        print("    for lobby host: %s" % Gotm.lobby.host.address)
         peer.create_client(Gotm.lobby.host.address, 8070)  
         print("    Joined lobby")
-    else:
-        print("    Hosting")
-        Gotm.host_lobby(false)
-        Gotm.lobby.name = str(OS.get_system_time_msecs())
-        Gotm.lobby.hidden = false
-        peer = NetworkedMultiplayerENet.new()
-        peer.create_server(8070)
-        print("    Lobby id: " + str(Gotm.lobby.id))
+        get_tree().set_network_peer(peer)
+        print("    peer set")
+        return
+    print("    Hosting")
+    Gotm.host_lobby(false)
+    Gotm.lobby.name = str(OS.get_system_time_msecs())
+    Gotm.lobby.hidden = false
+    peer = NetworkedMultiplayerENet.new()
+    peer.create_server(8070)
+    print("    Lobby id: " + str(Gotm.lobby.id))
     get_tree().set_network_peer(peer)
+    print("    peer set")
 
 func _on_lobby_changed():
     print("_on_lobby_changed")
@@ -265,12 +266,9 @@ func _on_HostCheckTimer_timeout():
     var lobbies_good = []
     for lobby in lobbies:
         print("    - lobby id:" + str(lobby.id))
-        print("    lobby peers: " + str(lobby.peers))
-        print("    lobby host id: " + str(lobby.host.id))
-        print("    lobby host name: " + str(lobby.host.display_name))
+        print("      lobby name: " + str(lobby.name))
         if not(lobby.id in bad_lobbies):
             lobbies_good.append(lobby)
-    print("  Creating/choosing lobby.")
     if lobbies_good:
         var other_lobby = lobbies_good[0]
         if other_lobby.id != Gotm.lobby.id and other_lobby.get_property("created") < Gotm.lobby.get_property("created"):
