@@ -21,11 +21,12 @@ func _process(_delta: float) -> void:
         target.update_aux()
 
 func _on_enter_state() -> void:
-    print("enter Aux Power: " + str(target.time))
     target.max_shield = target.shieldInit
     target.max_reward = target.initMaxReward
     target.update_aux()
+    target.update_current_reward()
     
 func _on_leave_state() -> void:
-    print("Exit Aux Power: " + str(target.time))
+    target.max_shield = target.shieldInit
+    target.max_reward = target.initMaxReward
     target.update_aux()

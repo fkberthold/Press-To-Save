@@ -26,7 +26,7 @@ func play_tick(tick_index):
 
 func update_display(running, time_left):
     if not time_left and time_left != 0:
-        text = "00:00:00.0"
+        text = "00:00:00:00"
         return
     var seconds_tenths = str(int(time_left * 10) % 10)
     var seconds = str(int(time_left) % 60)
@@ -35,16 +35,19 @@ func update_display(running, time_left):
     var minutes = str(int(time_left / 60) % 60)
     if len(minutes) == 1:
         minutes = "0" + minutes
-    var hours = str(int(time_left / (60 * 60)))
+    var hours = str(int(time_left / (60 * 60)) % 24)
     if len(hours) == 1:
         hours = "0" + hours
+    var days = str(int(time_left / (60 * 60 * 24)))
+    if len(days) == 1:
+        days = "0" + days
 
     if running and seconds_tenths == "0" and not ticked:
         play_tick(int(seconds))
         ticked = true
     elif seconds_tenths != "0":
         ticked = false
-    text = hours + ":" + minutes + ":" + seconds + "." + seconds_tenths
+    text = days + ":" + hours + ":" + minutes + ":" + seconds
 
 
 func _on_DefenceSystem_update_aux(running, time_left):

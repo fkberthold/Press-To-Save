@@ -23,10 +23,9 @@ func _process(_delta: float) -> void:
         target.update_shield()
 
 func _on_enter_state() -> void:
-    print("Enter Shielded: " + str(target.time))
+    pass
     
 func _on_leave_state() -> void:
-    print("Exit Shielded: " + str(target.time))
     var time_left = target.shield_timeout - target.time
     if time_left > 0:
         target.charging_start = time_left/target.max_shield

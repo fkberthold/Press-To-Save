@@ -16,11 +16,9 @@ func _process(delta: float) -> void:
         target.try_connect()
     
 func _on_enter_state() -> void:
-    print("Enter Connecting: " + str(target.time))
     target.update_aux()
     target.update_shield()
     
 func _on_leave_state() -> void:
-    print("Exit Connecting: " + str(target.time))
     target.update_aux()
     target.update_shield()

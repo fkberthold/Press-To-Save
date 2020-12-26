@@ -13,7 +13,7 @@ func update_board():
         if hero_reward[1] == 0:
             continue
         var hero = hero_reward[0]
-        var reward =  " ".repeat(int(max(0, 15 - len(hero)))) + "$" + str(hero_reward[1])
+        var reward =  " ".repeat(int(max(0, 17 - len(hero)))) + "$" + str(hero_reward[1])
         add_item(hero + reward, null, false)
 
 class RewardSorter:

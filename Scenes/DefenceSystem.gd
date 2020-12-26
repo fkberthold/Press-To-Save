@@ -75,15 +75,12 @@ func set_initial_state():
         stored_reward = 0
         current_reward = 0
         max_reward = initMaxReward
-        state_machine.current_state = "powerless"
-        powerless()
+        state_machine.current_state = "connecting"
         update_aux()
     else:
         reset_state = true
 
 func set_state_string(state_array):
-    print("set_state_string")
-    print("State Array: " + str(state_array))
     if time:
         aux_timeout = state_array[0]
         charging_timeout = state_array[1]
@@ -93,19 +90,15 @@ func set_state_string(state_array):
         current_reward = state_array[5]
         max_reward = state_array[6]
         if charging_timeout > time:
-            print("Set: Charging")
             state_machine.current_state = "charging"
         elif shield_timeout > time:
-            print("Set: Shielded")
             state_machine.current_state = "shielded"
         elif aux_timeout > time:
-            print("Set: Aux_Power")
             stored_reward = 0
             current_reward = 0
             state_machine.current_state = "aux_power"
             max_shield = shieldInit
         else:
-            print("Set: Powerless")
             stored_reward = 0
             current_reward = 0
             state_machine.current_state = "powerless"
@@ -118,10 +111,7 @@ func set_state_string(state_array):
         set_state = state_array
 
 func update_state(state_array):
-    print("update_state")
-    print("State Array: " + str(state_array))
     if state_machine.current_state == "connecting":
-        print("to set_state_string")
         set_state_string(state_array)
         return
     state_machine.transition("charging")
@@ -139,6 +129,7 @@ func _process(delta: float) -> void:
         request_unix_time()
         time = null
         if(state_machine.current_state != "connecting"):
+            set_state = []
             state_machine.transition("connecting")
     state_machine._process(delta)
 
@@ -150,8 +141,8 @@ func change_max_reward():
         else:
             max_reward = max(initMaxReward, round(ease(percent * 2, -2.2) * max_reward))
     else:
+        print("Resetting max reward to init")
         max_reward = initMaxReward
-    print("max reward: %s" % max_reward)
 
 func request_unix_time():
     $HTTPRequest.request("https://worldtimeapi.org/api/timezone/Etc/UTC")
@@ -162,12 +153,12 @@ func _on_HTTPRequest_request_completed(_result, response_code, _headers, body):
         time = float(json.result['unixtime'])
         time_offset = time - OS.get_unix_time()
         if reset_state:
-            print("Reset state")
             set_initial_state()
         elif set_state:
-            print("Set state")
             set_state_string(set_state)
             set_state = []
+        else:
+            emit_signal("reconnect")
     else:
         request_unix_time()
 #        emit_signal("reconnect")
@@ -204,7 +195,6 @@ func update_current_reward():
         emit_signal("update_reward", 0)
 
 func powerless():
-    print("POWERLESS!!!!!")
     emit_signal("powerless")
 
 func try_connect():
